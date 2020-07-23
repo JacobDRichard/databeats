@@ -7,6 +7,8 @@ from datetime import datetime, timedelta
 from random import randint
 from grafana_api import *
 import itertools
+import uuid
+import os
 
 app = Flask(__name__)
 app.secret_key = 'secret'
@@ -160,87 +162,119 @@ def sonify():
     datetimeE = str(datetimeE.isoformat('T'))
 
     if request.method == 'POST':
-        database = request.form['database']
-        measurement = request.form['measurement']
-        field = request.form['field']
+        action = request.form.get('action')
 
-        tagName = ''
-        if 'tagName' in request.form:
-            tagName = request.form['tagName']
-            print(tagName, type(tagName))
+        if action == 'query':
+            database = request.form['database']
+            measurement = request.form['measurement']
+            field = request.form['field']
 
-        tagValue = ''
-        if 'tagValue' in request.form:
-            tagValue = request.form['tagValue']
-            print(tagValue, type(tagValue))
+            tagName = ''
+            if 'tagName' in request.form:
+                tagName = request.form['tagName']
 
-        datetimeStart = request.form['datetimeStart'] + 'Z'
-        datetimeEnd = request.form['datetimeEnd'] + 'Z'
+            tagValue = ''
+            if 'tagValue' in request.form:
+                tagValue = request.form['tagValue']
 
-        tagSection = ''
-        if tagName and tagValue is not '':
-            tagSection = ' AND \"' + tagName + '\"=\'' + tagValue + '\''
+            datetimeStart = request.form['datetimeStart'] + 'Z'
+            datetimeEnd = request.form['datetimeEnd'] + 'Z'
 
-        # Create query from submitted form data
-        query = 'SELECT ' + field + ' AS data FROM \"' + database + '\".\"autogen\".\"' + measurement \
-                + '\" WHERE time > \'' + datetimeStart + '\' AND time < \'' + datetimeEnd + '\'' + tagSection
+            tagSection = ''
+            if tagName and tagValue is not '':
+                tagSection = ' AND \"' + tagName + '\"=\'' + tagValue + '\''
 
-        print(query)
+            # Create query from submitted form data
+            query = 'SELECT ' + field + ' AS data FROM \"' + database + '\".\"autogen\".\"' + measurement \
+                    + '\" WHERE time > \'' + datetimeStart + '\' AND time < \'' + datetimeEnd + '\'' + tagSection
 
-        result = influx.query(query).raw
+            print(query)
 
-        resultDataList = result['series']
+            result = influx.query(query).raw
 
-        if len(resultDataList):
-            # Query returned data, grab minimum and maximum value for scaling
-            resultData = resultDataList[0]['values']
-            resultsDict = {point[0]: point[1] for point in resultData}
+            resultDataList = result['series']
 
-            minValue = resultsDict[min(resultsDict, key=resultsDict.get)]
-            maxValue = resultsDict[max(resultsDict, key=resultsDict.get)]
+            if len(resultDataList):
+                # Query returned data, generate random session ID
+                sessionID = str(uuid.uuid4())
 
-            # Create a new list and scale the results to 1-8
+                # Grab minimum and maximum value for scaling
+                resultData = resultDataList[0]['values']
+                resultsDict = {point[0]: point[1] for point in resultData}
 
-            noteValues = []
-            for point in resultData:
-                noteValues.append(round((((8 - 1) * (point[1] - minValue)) / (maxValue - minValue)) + 1))
+                minValue = resultsDict[min(resultsDict, key=resultsDict.get)]
+                maxValue = resultsDict[max(resultsDict, key=resultsDict.get)]
 
-            noteStream = stream.Stream()
-            for noteV in noteValues:
-                if noteV == 1:
-                    noteStream.append(note.Note('C3'))
-                elif noteV == 2:
-                    noteStream.append(note.Note('D3'))
-                elif noteV == 3:
-                    noteStream.append(note.Note('E3'))
-                elif noteV == 4:
-                    noteStream.append(note.Note('F3'))
-                elif noteV == 5:
-                    noteStream.append(note.Note('G3'))
-                elif noteV == 6:
-                    noteStream.append(note.Note('A3'))
-                elif noteV == 7:
-                    noteStream.append(note.Note('B3'))
-                elif noteV == 8:
-                    noteStream.append(note.Note('C4'))
+                # Create a new list and scale the results to 1-8
+                noteValues = []
+                for point in resultData:
+                    noteValues.append(round((((8 - 1) * (point[1] - minValue)) / (maxValue - minValue)) + 1))
 
-            noteStream.write('midi', 'test.midi')
+                noteStream = stream.Stream()
+                for noteV in noteValues:
+                    if noteV == 1:
+                        noteStream.append(note.Note('C3'))
+                    elif noteV == 2:
+                        noteStream.append(note.Note('D3'))
+                    elif noteV == 3:
+                        noteStream.append(note.Note('E3'))
+                    elif noteV == 4:
+                        noteStream.append(note.Note('F3'))
+                    elif noteV == 5:
+                        noteStream.append(note.Note('G3'))
+                    elif noteV == 6:
+                        noteStream.append(note.Note('A3'))
+                    elif noteV == 7:
+                        noteStream.append(note.Note('B3'))
+                    elif noteV == 8:
+                        noteStream.append(note.Note('C4'))
 
-            # Convert midi to raw PCM data
-            # fluidsynth -ni -F output.wav -r 44100 SF.sf2 test.midi
-            subprocess.call(['fluidsynth', '-ni', '-F', 'output', '-r', '44100', 'SF.sf2', 'test.midi'])
+                noteStream.write('midi', 'midi_' + sessionID + '.midi')
 
-            # Convert raw PCM data to .wav file
-            with open('output', 'rb') as pcmfile:
-                pcmdata = pcmfile.read()
-            with wave.open('static/output' + '.wav', 'wb') as wavfile:
-                wavfile.setparams((2, 2, 44100, 0, 'NONE', 'NONE'))
-                wavfile.writeframes(pcmdata)
+                # Convert midi to raw PCM data
+                # fluidsynth -ni -F output.wav -r 44100 SF.sf2 test.midi
+                outName = 'pcm_' + sessionID
+                subprocess.call(['fluidsynth', '-ni', '-F', outName, '-r', '44100', 'SF.sf2', 'test.midi'])
 
-            return render_template('sonify.html', datetimeS=datetimeS, datetimeE=datetimeE, list_dbs=list_dbs, music=True)
+                # Create session directory
+                cwd = os.getcwd()
+                os.mkdir(cwd + '/static/generated/' + sessionID)
 
-        else:
-            flash('Query did not return any data, please try again.', 'danger')
+                # Convert raw PCM data to .wav file
+                with open(outName, 'rb') as pcmfile:
+                    pcmdata = pcmfile.read()
+                with wave.open('static/generated/' + sessionID + '/output.wav', 'wb') as wavfile:
+                    wavfile.setparams((2, 2, 44100, 0, 'NONE', 'NONE'))
+                    wavfile.writeframes(pcmdata)
+
+                # Get path of the generated music
+                musicPath = '/static/generated/' + sessionID + '/output.wav'
+
+                # Cleanup old files
+                os.remove(cwd + '/midi_' + sessionID + '.midi')
+                os.remove(cwd + '/pcm_' + sessionID)
+
+                return render_template('sonify.html', datetimeS=datetimeS, datetimeE=datetimeE, list_dbs=list_dbs, music=True, musicPath=musicPath, sessionID=sessionID)
+
+            else:
+                flash('Query did not return any data, please try again.', 'danger')
+        elif action == 'lookup':
+            cwd = os.getcwd()
+            sessionID = request.form['sessionID']
+
+            # TODO: The sessionID should probably be sanitized
+
+            # Check our generated directory for the submitted session ID
+            if os.path.isdir(cwd + '/static/generated/' + sessionID):
+                musicPath = '/static/generated/' + sessionID + '/output.wav'
+
+                return render_template('sonify.html', datetimeS=datetimeS, datetimeE=datetimeE, list_dbs=list_dbs,
+                                       music=True, musicPath=musicPath, sessionID=sessionID)
+
+            else:
+                flash('A session with an ID of \'' + sessionID + '\' was not found.', 'danger')
+
+
 
     return render_template('sonify.html', datetimeS=datetimeS, datetimeE=datetimeE, list_dbs=list_dbs, music=False)
 
