@@ -234,7 +234,8 @@ def sonify():
                 # Convert midi to raw PCM data
                 # fluidsynth -ni -F output.wav -r 44100 SF.sf2 test.midi
                 outName = 'pcm_' + sessionID
-                subprocess.call(['fluidsynth', '-ni', '-F', outName, '-r', '44100', 'SF.sf2', 'test.midi'])
+                midiName = 'midi_' + sessionID + '.midi'
+                subprocess.call(['fluidsynth', '-ni', '-F', outName, '-r', '44100', 'SF.sf2', midiName])
 
                 # Create session directory
                 cwd = os.getcwd()
