@@ -232,6 +232,10 @@ def sonify():
 
                 # Create session directory
                 cwd = os.getcwd()
+                if not os.path.isdir(cwd + '/static/generated'):
+                    # Create our generated directory if it doesn't already exist
+                    os.mkdir(cwd + '/static/generated')
+
                 os.mkdir(cwd + '/static/generated/' + sessionID)
 
                 # Convert midi to wav
