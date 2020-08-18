@@ -1,0 +1,75 @@
+version: '3'
+services:
+  influxdb:
+    image: "influxdb:latest"
+    volumes:
+      - ./influxdb/data:/var/lib/influxdb
+      - ./influxdb/:/etc/influxdb/
+    ports:
+      - "8086:8086"
+      - "8082:8082"
+      - "8089:8089/udp"
+
+  telegraf:
+    image: "telegraf:latest"
+    environment:
+      HOSTNAME: "telegraf"
+    links:
+      - influxdb
+    volumes:
+      - ./telegraf/:/etc/telegraf/
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - influxdb
+
+  kapacitor:
+    image: "kapacitor:latest"
+    volumes:
+      - ./kapacitor/data/:/var/lib/kapacitor
+      - ./kapacitor/:/etc/kapacitor/
+    links:
+      - influxdb
+    ports:
+      - "9092:9092"
+
+  chronograf:
+    build:
+      context: ./chronograf
+      dockerfile: ./Dockerfile
+    image: "chrono_config"
+    environment:
+      RESOURCES_PATH: "/usr/share/chronograf/resources"  
+    volumes:
+      - ./chronograf/data/:/var/lib/chronograf/
+    links:
+      - influxdb
+      - kapacitor
+    ports:
+      - "8888:8888"
+    depends_on:
+      - kapacitor
+      - influxdb
+      - telegraf
+
+  grafana:
+    image: "grafana/grafana"
+    ports:
+      - "3000:3000"
+
+  flask:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: "databeats-flask"
+    volumes:
+      - ./src/:/app
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    image: "databeats-nginx"
+    ports:
+      - "5000:80"
+    depends_on:
+      - flask

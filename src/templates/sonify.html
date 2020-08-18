@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+{% block content %}
+<main role="main" class="flex-shrink-0">
+    <div class="container-fluid">
+        <div class="jumbotron text-center">
+            <h1>Sonify</h1>
+            <p class="lead">Create a query to return time series data to be sonified.</p>
+        </div>
+
+        <form action="#" method="post">
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label for="database">Database</label>
+                    <select class="custom-select" id="database" name="database" required>
+                        <option selected disabled hidden></option>
+                        {% for db in list_dbs %}
+                        {% if db != 'telegraf' and db != '_internal' %}
+                        <option>{{db}}</option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="measurement">Measurement</label>
+                    <select class="custom-select" id="measurement" name="measurement" required disabled>
+                        <option>Select a database...</option>
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="field">Field</label>
+                    <select class="custom-select" id="field" name="field" required disabled>
+                        <option>Select a measurement...</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label for="tagName">Tag name (Optional)</label>
+                    <select class="custom-select" id="tagName" name="tagName" disabled>
+                        <option>Select a measurement...</option>
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="tagValue">Tag value (Optional)</label>
+                    <select class="custom-select" id="tagValue" name="tagValue" disabled>
+                        <option>Select a tag name...</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label for="datetimeStart">Start datetime</label>
+                    <input class="form-control" type="datetime-local" value="{{datetimeS}}" id="datetimeStart"
+                           name="datetimeStart" required>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="datetimeEnd">End datetime</label>
+                    <input class="form-control" type="datetime-local" value="{{datetimeE}}" id="datetimeEnd"
+                           name="datetimeEnd" required>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <button type="submit" class="btn btn-success" name="action" value="query">Run query</button>
+                </div>
+            </div>
+        </form>
+        {% if music %}
+        <div class="row">
+            <audio controls>
+                <source src="/static/output.wav" type="audio/wav">
+            </audio>
+        </div>
+        {% endif %}
+    </div>
+</main>
+<script charset="utf-8" type="text/javascript">
+    function isEmpty(obj) {
+        for (let key in obj) {
+            if (obj.hasOwnProperty(key))
+                return false;
+        }
+        return true;
+    }
+
+    $(function () {
+        let select = {
+            database: $('#database'),
+            measurement: $('#measurement'),
+            tagName: $('#tagName'),
+            tagValue: $('#tagValue'),
+            field: $('#field')
+        }
+
+        function updateMeasurements() {
+            let database = select.database.val();
+            select.measurement.attr('disabled', 'disabled');
+
+            if (database.length) {
+                $.getJSON("{{ url_for('get_measurements') }}", {database: database}, function (data) {
+                    select.measurement.empty();
+                    if (!isEmpty(data)) {
+                        select.measurement.append(
+                            $('<option selected disabled hidden>', {
+                                value: 'NA',
+                                text: ''
+                            })
+                        );
+                        Object.keys(data).forEach(function (data2) {
+                            select.measurement.append(
+                                $('<option>', {
+                                    value: data2,
+                                    text: data2
+                                })
+                            );
+                        });
+                        select.measurement.removeAttr('disabled');
+                    } else {
+                        select.measurement.append(
+                            $('<option>', {
+                                value: "NA",
+                                text: "No measurements found"
+                            })
+                        );
+                    }
+                });
+            }
+        }
+
+        function updateFields() {
+            let database = select.database.val();
+            let measurement = select.measurement.val();
+            select.field.attr('disabled', 'disabled');
+
+            if (database.length && measurement.length) {
+                $.getJSON("{{ url_for('get_fields') }}", {
+                    database: database,
+                    measurement: measurement
+                }, function (data) {
+                    select.field.empty();
+                    if (!isEmpty(data)) {
+                        select.field.append(
+                            $('<option selected disabled hidden>', {
+                                value: 'NA',
+                                text: ''
+                            })
+                        );
+                        Object.keys(data).forEach(function (data2) {
+                            select.field.append(
+                                $('<option>', {
+                                    value: data2,
+                                    text: data2
+                                })
+                            );
+                        });
+                        select.field.removeAttr('disabled');
+                    } else {
+                        select.field.append(
+                            $('<option>', {
+                                value: "NA",
+                                text: "No fields found"
+                            })
+                        );
+                    }
+                });
+            }
+        }
+
+        function updateTagNames() {
+            let database = select.database.val();
+            let measurement = select.measurement.val();
+            select.tagName.attr('disabled', 'disabled');
+
+            if (database.length && measurement.length) {
+                $.getJSON("{{ url_for('get_tag_names') }}", {
+                    database: database,
+                    measurement: measurement
+                }, function (data) {
+                    select.tagName.empty();
+                    if (!isEmpty(data)) {
+                        select.tagName.append(
+                            $('<option selected disabled hidden>', {
+                                value: 'NA',
+                                text: ''
+                            })
+                        );
+                        Object.keys(data).forEach(function (data2) {
+                            select.tagName.append(
+                                $('<option>', {
+                                    value: data2,
+                                    text: data2
+                                })
+                            );
+                        });
+                        select.tagName.removeAttr('disabled');
+                    } else {
+                        select.tagName.append(
+                            $('<option>', {
+                                value: "NA",
+                                text: "No tag names found"
+                            })
+                        );
+                    }
+                });
+            }
+        }
+
+        function updateTagValues() {
+            let database = select.database.val();
+            let measurement = select.measurement.val();
+            let tagName = select.tagName.val();
+            select.tagValue.attr('disabled', 'disabled');
+
+            if (database.length && measurement.length && tagName.length) {
+                $.getJSON("{{ url_for('get_tag_values') }}", {
+                    database: database,
+                    measurement: measurement,
+                    tagName: tagName
+                }, function (data) {
+                    select.tagValue.empty();
+                    if (!isEmpty(data)) {
+                        select.tagValue.append(
+                            $('<option selected disabled hidden>', {
+                                value: 'NA',
+                                text: ''
+                            })
+                        );
+                        Object.keys(data).forEach(function (data2) {
+                            select.tagValue.append(
+                                $('<option>', {
+                                    value: data2,
+                                    text: data2
+                                })
+                            );
+                        });
+                        select.tagValue.removeAttr('disabled');
+                    } else {
+                        select.tagValue.append(
+                            $('<option>', {
+                                value: "NA",
+                                text: "No tag values found"
+                            })
+                        );
+                    }
+                });
+            }
+        }
+
+        select.database.on('change', function () {
+            updateMeasurements();
+        });
+
+        select.measurement.on('change', function () {
+            updateTagNames();
+            updateFields();
+        });
+
+        select.tagName.on('change', function () {
+            updateTagValues();
+        });
+
+    });
+</script>
+{% endblock %}
