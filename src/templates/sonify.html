@@ -7,6 +7,21 @@
             <p class="lead">Create a query to return time series data to be sonified.</p>
         </div>
 
+        <h1 class="mt-5">From a session ID</h1>
+        <p class="lead">Lookup a previous query using your session ID.</p>
+        <form action="#" method="post">
+            <div class="row mb-3">
+                <div class="col-md-4 mb-3">
+                    <input type="text" class="form-control" name="sessionID" placeholder="Session ID" value=""
+                           required>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <button type="submit" class="btn btn-success" name="action" value="lookup">Lookup</button>
+                </div>
+            </div>
+        </form>
+
+        <h1 class="mt-5">From a query</h1>
         <form action="#" method="post">
             <div class="row">
                 <div class="col-md-3 mb-3">
@@ -68,7 +83,7 @@
         {% if music %}
         <div class="row">
             <audio controls>
-                <source src="/static/output.wav" type="audio/wav">
+                <source src="{{musicPath}}" type="audio/wav">
             </audio>
         </div>
         {% endif %}
