@@ -176,8 +176,39 @@ def sonify():
             if 'tagValue' in request.form:
                 tagValue = request.form['tagValue']
 
-            datetimeStart = request.form['datetimeStart'] + 'Z'
-            datetimeEnd = request.form['datetimeEnd'] + 'Z'
+            datetimeStart = request.form['datetimeStart']
+            datetimeEnd = request.form['datetimeEnd']
+
+            # Check the submitted datetime data
+            start = ''
+            try:
+                start = datetime.strptime(datetimeStart, '%Y-%m-%dT%H:%M:%S')
+
+            except ValueError:
+                # Failed to parse, compatibility check across browsers, some do not include seconds
+                try:
+                    start = datetime.strptime(datetimeStart + ':00', '%Y-%m-%dT%H:%M:%S')
+
+                except ValueError:
+                    # Unable to parse the submitted data, flash error
+                    flash('Unable to parse the submitted start datetime.', 'danger')
+
+            start = datetime.strftime(start, '%Y-%m-%dT%H:%M:%S') + 'Z'
+
+            end = ''
+            try:
+                end = datetime.strptime(datetimeEnd, '%Y-%m-%dT%H:%M:%S')
+
+            except ValueError:
+                # Failed to parse, compatibility check across browsers, some do not include seconds
+                try:
+                    end = datetime.strptime(datetimeEnd + ':00', '%Y-%m-%dT%H:%M:%S')
+
+                except ValueError:
+                    # Unable to parse the submitted data, flash error
+                    flash('Unable to parse the submitted start datetime.', 'danger')
+
+            end = datetime.strftime(end, '%Y-%m-%dT%H:%M:%S') + 'Z'
 
             tagSection = ''
             if tagName and tagValue is not '':
@@ -185,7 +216,7 @@ def sonify():
 
             # Create query from submitted form data
             query = 'SELECT ' + field + ' AS data FROM \"' + database + '\".\"autogen\".\"' + measurement \
-                    + '\" WHERE time > \'' + datetimeStart + '\' AND time < \'' + datetimeEnd + '\'' + tagSection
+                    + '\" WHERE time > \'' + start + '\' AND time < \'' + end + '\'' + tagSection
 
             print(query)
 
