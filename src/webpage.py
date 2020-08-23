@@ -4,13 +4,16 @@ from music21 import *
 import subprocess
 from datetime import datetime, timedelta
 from random import randint
-from grafana_api import *
 import itertools
 import uuid
 import os
 
 app = Flask(__name__)
 app.secret_key = 'secret'
+
+
+def influxdb():
+    return InfluxDBClient(host='influxdb', port=8086)
 
 
 @app.route('/')
@@ -20,8 +23,7 @@ def home():
 
 @app.route('/data', methods=['GET', 'POST'])
 def data():
-    influx = InfluxDBClient(host='influxdb', port=8086)
-    grafana = GrafanaFace(auth=('admin', 'admin'), host='grafana', port=3000)
+    influx = influxdb()
     dict_dbs = influx.get_list_database()
     list_dbs = []
 
@@ -46,17 +48,6 @@ def data():
                 # Entered name is verified, create database
                 influx.create_database(dbName)
 
-                # Create new datasource in Grafana
-                requestJson = {
-                    'name': dbName,
-                    'type': 'influxdb',
-                    'url': 'http://influxdb:8086',
-                    'database': dbName,
-                    'access': 'direct',
-                    'basicAuth': False
-                }
-                grafana.datasource.create_datasource(datasource=requestJson)
-
                 flash('Database \'' + dbName + '\' was created successfully.', 'success')
                 return redirect(url_for('data'))
 
@@ -66,9 +57,6 @@ def data():
         elif action[0] == 'delete':
             # Delete the database on InfluxDB
             influx.drop_database(action[1])
-
-            # Delete the datasource on Grafana
-            grafana.datasource.delete_datasource_by_name(action[1])
 
             flash('Database \'' + action[1] + '\' was deleted successfully.', 'success')
             return redirect(url_for('data'))
@@ -146,7 +134,7 @@ def data():
 
 @app.route('/sonify', methods=['GET', 'POST'])
 def sonify():
-    influx = InfluxDBClient(host='influxdb', port=8086)
+    influx = influxdb()
     dict_dbs = influx.get_list_database()
     list_dbs = []
 
@@ -306,7 +294,7 @@ def sonify():
 
 @app.route('/database/get_measurements')
 def get_measurements():
-    influx = InfluxDBClient(host='influxdb', port=8086)
+    influx = influxdb()
     database = request.args.get('database')
 
     dict_dbs = influx.get_list_database()
@@ -337,7 +325,7 @@ def get_measurements():
 
 @app.route('/database/get_series/get_tag_names')
 def get_tag_names():
-    influx = InfluxDBClient(host='influxdb', port=8086)
+    influx = influxdb()
     database = request.args.get('database')
     measurement = request.args.get('measurement')
 
@@ -368,7 +356,7 @@ def get_tag_names():
 
 @app.route('/database/get_series/get_tag_values')
 def get_tag_values():
-    influx = InfluxDBClient(host='influxdb', port=8086)
+    influx = influxdb()
     database = request.args.get('database')
     measurement = request.args.get('measurement')
     tagName = request.args.get('tagName')
@@ -401,7 +389,7 @@ def get_tag_values():
 
 @app.route('/database/get_series/get_fields')
 def get_fields():
-    influx = InfluxDBClient(host='influxdb', port=8086)
+    influx = influxdb()
     database = request.args.get('database')
     measurement = request.args.get('measurement')
 
