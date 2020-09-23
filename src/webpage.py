@@ -269,7 +269,18 @@ def sonify():
                 # Cleanup old files
                 os.remove(cwd + '/midi_' + sessionID + '.midi')
 
-                return render_template('sonify.html', datetimeS=datetimeS, datetimeE=datetimeE, list_dbs=list_dbs, music=True, musicPath=musicPath, sessionID=sessionID)
+                # Make the chart
+                legend = 'Queried Data'
+
+                labels = []
+                values = []
+                for point in resultData:
+                    labels.append(point[0])
+                    values.append(point[1])
+
+                return render_template('sonify.html', datetimeS=datetimeS, datetimeE=datetimeE, list_dbs=list_dbs,
+                                       legend=legend, labels=labels, values=values, music=True, musicPath=musicPath,
+                                       sessionID=sessionID)
 
             else:
                 flash('Query did not return any data, please try again.', 'danger')
