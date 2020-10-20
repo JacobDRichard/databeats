@@ -119,6 +119,23 @@
             <button type="submit" class="btn btn-success" name="action" value="generate">Generate</button>
         </form>
         <h1 class="mt-5">Import data</h1>
+        <div class = "row">
+            <form enctype = "multipart/form-data" action = "#" method = "post">
+                <div class="col-md-3 mb-3">
+                    <label for="database1">Database</label>
+                    <select class="custom-select" id="database1" name="database1" required>
+                        {% for db in list_dbs %}
+                        {% if db != 'telegraf' and db != '_internal' %}
+                        <option>{{db}}</option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <label for="myfile">Select a file:</label>
+                <input type="file" id="myfile" name="myfile">
+                <button type="submit" class="btn btn-success" name="action" value="upload">Upload</button>
+            </form>
+        </div>
         <p class="lead">maybe later</p>
     </div>
 </main>
