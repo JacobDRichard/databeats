@@ -7,6 +7,7 @@ from random import randint
 import itertools
 import uuid
 import os
+import csv
 
 app = Flask(__name__)
 app.secret_key = 'secret'
@@ -266,6 +267,15 @@ def sonify():
                 # Get path of the generated music
                 musicPath = '/static/generated/' + sessionID + '/output.wav'
 
+                # Save queried data into file for when the user looks up the session ID
+                with open(cwd + '/static/generated/' + sessionID + '/data.csv', mode='w') as dataCSV:
+                    columns = ['time', measurement + '.' + field]
+                    writer = csv.DictWriter(dataCSV, fieldnames=columns)
+
+                    writer.writeheader()
+                    for point in resultData:
+                        writer.writerow({'time': point[0], measurement + '.' + field: point[1]})
+
                 # Cleanup old files
                 os.remove(cwd + '/midi_' + sessionID + '.midi')
 
@@ -293,9 +303,29 @@ def sonify():
             # Check our generated directory for the submitted session ID
             if os.path.isdir(cwd + '/static/generated/' + sessionID):
                 musicPath = '/static/generated/' + sessionID + '/output.wav'
+                dataPath = cwd + '/static/generated/' + sessionID + '/data.csv'
+
+                # Read the data file to populate the chart
+                labels = []
+                values = []
+                line = 0
+                dataColumn = ''
+                with open(dataPath, mode='r') as dataCSV:
+                    reader = csv.DictReader(dataCSV)
+
+                    for row in reader:
+                        if line is 0:
+                            dataColumn = ','.join(row).split(',')[1]
+                            line += 1
+
+                        labels.append(row['time'])
+                        values.append(row[dataColumn])
+
+                legend = 'Queried Data'
 
                 return render_template('sonify.html', datetimeS=datetimeS, datetimeE=datetimeE, list_dbs=list_dbs,
-                                       music=True, musicPath=musicPath, sessionID=sessionID)
+                                       legend=legend, labels=labels, values=values, music=True, musicPath=musicPath,
+                                       sessionID=sessionID)
 
             else:
                 flash('A session with an ID of \'' + sessionID + '\' was not found.', 'danger')
