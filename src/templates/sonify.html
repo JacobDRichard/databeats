@@ -146,6 +146,8 @@
                 <h1 class="mt-5">Results</h1>
                 <p class="lead">This session ID will allow you to pull up your results in the future.</p>
                 <p class="lead">Session ID: <code>{{ sessionID }}</code></p>
+                <a href="http://localhost:8888/sources/10000/chronograf/data-explorer?query={{ query }}">View on
+                    Chronograf</a>
                 <canvas id="resultsChart" height="700"></canvas>
                 <script>createChart();</script>
                 <audio id="music" src="{{ musicPath }}" controls='controls'></audio>

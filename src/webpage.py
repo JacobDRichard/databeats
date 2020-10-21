@@ -262,8 +262,6 @@ def sonify():
             query = 'SELECT ' + field + ' AS data FROM \"' + database + '\".\"autogen\".\"' + measurement \
                     + '\" WHERE time > \'' + start + '\' AND time < \'' + end + '\'' + tagSection
 
-            print(query)
-
             result = influx.query(query).raw
 
             resultDataList = result['series']
@@ -331,6 +329,11 @@ def sonify():
                     for point in resultData:
                         writer.writerow({'time': point[0], measurement + '.' + field: point[1]})
 
+                # Save query for when the user looks up the session ID
+                queryFile = open(cwd + '/static/generated/' + sessionID + '/query.txt', 'w')
+                queryFile.write(query)
+                queryFile.close()
+
                 # Cleanup old files
                 os.remove(cwd + '/midi_' + sessionID + '.midi')
 
@@ -347,7 +350,7 @@ def sonify():
 
                 return render_template('sonify.html', datetimeS=datetimeS, datetimeE=datetimeE, list_dbs=list_dbs,
                                        legend=legend, labels=labels, values=values, music=True, musicPath=musicPath,
-                                       sessionID=sessionID, amountPoints=amountPoints)
+                                       sessionID=sessionID, amountPoints=amountPoints, query=query)
 
             else:
                 flash('Query did not return any data, please try again.', 'danger')
@@ -361,6 +364,11 @@ def sonify():
             if os.path.isdir(cwd + '/static/generated/' + sessionID):
                 musicPath = '/static/generated/' + sessionID + '/output.wav'
                 dataPath = cwd + '/static/generated/' + sessionID + '/data.csv'
+                queryPath = cwd + '/static/generated/' + sessionID + '/query.txt'
+
+                # Read the query to produce the hyperlink to Chronograf
+                queryFile = open(queryPath, 'r')
+                query = queryFile.read()
 
                 # Read the data file to populate the chart
                 labels = []
@@ -385,7 +393,7 @@ def sonify():
 
                 return render_template('sonify.html', datetimeS=datetimeS, datetimeE=datetimeE, list_dbs=list_dbs,
                                        legend=legend, labels=labels, values=values, music=True, musicPath=musicPath,
-                                       sessionID=sessionID, amountPoints=amountPoints)
+                                       sessionID=sessionID, amountPoints=amountPoints, query=query)
 
             else:
                 flash('A session with an ID of \'' + sessionID + '\' was not found.', 'danger')
