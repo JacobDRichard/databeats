@@ -344,13 +344,15 @@ def sonify():
 
                 labels = []
                 values = []
+                amountPoints = 0
                 for point in resultData:
                     labels.append(point[0])
                     values.append(point[1])
+                    amountPoints += 1
 
                 return render_template('sonify.html', datetimeS=datetimeS, datetimeE=datetimeE, list_dbs=list_dbs,
                                        legend=legend, labels=labels, values=values, music=True, musicPath=musicPath,
-                                       sessionID=sessionID)
+                                       sessionID=sessionID, amountPoints=amountPoints)
 
             else:
                 flash('Query did not return any data, please try again.', 'danger')
@@ -370,6 +372,7 @@ def sonify():
                 values = []
                 line = 0
                 dataColumn = ''
+                amountPoints = 0
                 with open(dataPath, mode='r') as dataCSV:
                     reader = csv.DictReader(dataCSV)
 
@@ -377,15 +380,17 @@ def sonify():
                         if line is 0:
                             dataColumn = ','.join(row).split(',')[1]
                             line += 1
+                            continue
 
                         labels.append(row['time'])
                         values.append(row[dataColumn])
+                        amountPoints += 1
 
                 legend = 'Queried Data'
 
                 return render_template('sonify.html', datetimeS=datetimeS, datetimeE=datetimeE, list_dbs=list_dbs,
                                        legend=legend, labels=labels, values=values, music=True, musicPath=musicPath,
-                                       sessionID=sessionID)
+                                       sessionID=sessionID, amountPoints=amountPoints)
 
             else:
                 flash('A session with an ID of \'' + sessionID + '\' was not found.', 'danger')
