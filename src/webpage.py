@@ -58,10 +58,21 @@ def data():
                 flash('Database \'' + dbName + '\' was not created because it already exists.', 'danger')
 
         elif action[0] == 'delete':
-            # Delete the database on InfluxDB
-            influx.drop_database(action[1])
+            # In case the name had dashes in it
+            databaseName = ''
+            for i in range(len(action)):
+                if i is 0:
+                    continue
 
-            flash('Database \'' + action[1] + '\' was deleted successfully.', 'success')
+                databaseName += action[i]
+
+                if i is not len(action) - 1:
+                    databaseName += '-'
+
+            # Delete the database on InfluxDB
+            influx.drop_database(databaseName)
+
+            flash('Database \'' + databaseName + '\' was deleted successfully.', 'success')
             return redirect(url_for('data'))
         elif action[0] == 'generate':
             # Get data submitted from form that is required to be validated
