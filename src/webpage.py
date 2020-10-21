@@ -10,7 +10,6 @@ import os
 import csv
 from werkzeug.utils import secure_filename
 
-
 app = Flask(__name__)
 app.secret_key = 'secret'
 
@@ -143,63 +142,48 @@ def data():
                       'Iterations must be greater than 0.',
                       'danger')
         elif action[0] == 'upload':
-            # retrieve keyed in in from input
-            file = request.files['myfile']
+            # Retrieve and save file
+            file = request.files['uploadFile']
+            file.save(secure_filename(file.filename))
 
-            # submit an empty form input
-            if file.filename == '':
-                flash('No selected file', 'danger')
-                return redirect(url_for('data'))
-            if 'myfile' in request.files:
-                flash('File is in there', 'success')
+            # Parse uploaded file
+            uploadData = []
+            with open(file.filename, 'r') as uploadFile:
+                reader = csv.reader(uploadFile)
 
-                # saves file into project folder
-                file.save(secure_filename(file.filename))
-                filename1 = file.filename
-                fields = []
-                queryData1 = []
+                # Extract measurement and field name
+                dataColumn = next(reader)
+                measurement = dataColumn[1].split('.')[0]
+                field = dataColumn[1].split('.')[1]
 
-                # builds csv reader to parse through data
-                with open(filename1, 'r') as csvfile:
-                    # creating a csv reader object
-                    csvreader = csv.reader(csvfile)
-
-                    # extracting field names through first row
-                    fields = next(csvreader)
-
-                    # splitting 2nd column header by dot
-                    measurementsplit = fields[1].split('.')[0]
-                    fieldsplit = fields[1].split('.')[1]
-
-                    # extracting data
-                    for line in csvreader:
-                        queryJson1 = {
-                            'measurement': measurementsplit,
-                            'time': line[0],
-                            'fields': {
-                                fieldsplit: int(line[1])
-                            }
+                # Parse data and create JSON list for DB write
+                for line in reader:
+                    dataJSON = {
+                        'measurement': measurement,
+                        'time': line[0],
+                        'fields': {
+                            field: int(line[1])
                         }
-                        queryData1.append(queryJson1)
+                    }
+                    uploadData.append(dataJSON)
 
-                # delete csv from project folder
-                cwd = os.getcwd()
-                os.remove(cwd + '/' + filename1)
+            # Remove uploaded file
+            cwd = os.getcwd()
+            os.remove(cwd + '/' + file.filename)
 
-                # swap to selected database
-                database1 = request.form['database1']
-                influx.switch_database(database1)
+            # Swap to selected database
+            database = request.form['uploadDatabase']
+            influx.switch_database(database)
 
-                # Upload csv data to InfluxDB
-                result1 = influx.write_points(queryData1)
+            # Write data to the database
+            result = influx.write_points(uploadData)
 
-                if result1:
-                    flash('Submitted csv file time series data to database \'' + database1 + '\' successfully.',
-                          'success')
-                else:
-                    flash('Failed to submit uploaded time series data to database \'' + database1 + '\'.',
-                          'danger')
-                return redirect(url_for('data'))
+            if result:
+                flash('Submitted \'' + file.filename + '\' file time series data to database \'' + database +
+                      '\' successfully.', 'success')
+            else:
+                flash('Failed to submit uploaded time series data to database \'' + database + '\'.',
+                      'danger')
 
     return render_template('data.html', datetimeF=datetimeF, tuples_dbs=tuples_dbs, list_dbs=list_dbs)
 

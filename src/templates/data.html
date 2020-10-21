@@ -122,8 +122,8 @@
         <div class = "row">
             <form enctype = "multipart/form-data" action = "#" method = "post">
                 <div class="col-md-3 mb-3">
-                    <label for="database1">Database</label>
-                    <select class="custom-select" id="database1" name="database1" required>
+                    <label for="uploadDatabase">Database</label>
+                    <select class="custom-select" id="uploadDatabase" name="uploadDatabase" required>
                         {% for db in list_dbs %}
                         {% if db != 'telegraf' and db != '_internal' %}
                         <option>{{db}}</option>
@@ -131,12 +131,11 @@
                         {% endfor %}
                     </select>
                 </div>
-                <label for="myfile">Select a file:</label>
-                <input type="file" id="myfile" name="myfile">
+                <label for="uploadFile">Select a file:</label>
+                <input type="file" id="uploadFile" name="uploadFile" required>
                 <button type="submit" class="btn btn-success" name="action" value="upload">Upload</button>
             </form>
         </div>
-        <p class="lead">maybe later</p>
     </div>
 </main>
 {% endblock %}
