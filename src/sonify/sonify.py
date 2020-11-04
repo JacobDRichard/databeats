@@ -10,7 +10,8 @@ from music21 import *
 sonify_bp = Blueprint(
     'sonify_bp', __name__,
     template_folder='templates',
-    static_folder='static'
+    static_folder='static',
+    static_url_path='/sonify/static'
 )
 
 
@@ -183,8 +184,6 @@ def sonify():
         elif action == 'lookup':
             cwd = os.getcwd()
             sessionID = request.form['sessionID']
-
-            print(cwd)
 
             # TODO: The sessionID should probably be sanitized
 
