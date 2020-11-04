@@ -210,7 +210,7 @@
                 select.measurement.attr('disabled', 'disabled');
 
                 if (database.length) {
-                    $.getJSON("{{ url_for('get_measurements') }}", {database: database}, function (data) {
+                    $.getJSON("{{ url_for('database_bp.get_measurements') }}", {database: database}, function (data) {
                         select.measurement.empty();
                         if (!isEmpty(data)) {
                             select.measurement.append(
@@ -246,7 +246,7 @@
                 select.field.attr('disabled', 'disabled');
 
                 if (database.length && measurement.length) {
-                    $.getJSON("{{ url_for('get_fields') }}", {
+                    $.getJSON("{{ url_for('database_bp.get_fields') }}", {
                         database: database,
                         measurement: measurement
                     }, function (data) {
@@ -285,7 +285,7 @@
                 select.tagName.attr('disabled', 'disabled');
 
                 if (database.length && measurement.length) {
-                    $.getJSON("{{ url_for('get_tag_names') }}", {
+                    $.getJSON("{{ url_for('database_bp.get_tag_names') }}", {
                         database: database,
                         measurement: measurement
                     }, function (data) {
@@ -325,7 +325,7 @@
                 select.tagValue.attr('disabled', 'disabled');
 
                 if (database.length && measurement.length && tagName.length) {
-                    $.getJSON("{{ url_for('get_tag_values') }}", {
+                    $.getJSON("{{ url_for('database_bp.get_tag_values') }}", {
                         database: database,
                         measurement: measurement,
                         tagName: tagName
