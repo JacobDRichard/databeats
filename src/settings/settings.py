@@ -1,6 +1,7 @@
 from influxdb import InfluxDBClient
 from flask import Blueprint, render_template, request, flash
 import configparser
+import requests
 import os
 
 settings_bp = Blueprint(
@@ -66,6 +67,20 @@ def settings():
                 config.write(file)
 
             flash('The settings were applied successfully', 'success')
+            return render_template('settings.html', host=inputHost, port=inputPort)
+
+        elif action == 'testConnection':
+            inputHost = request.form['dbHost']
+            inputPort = request.form['dbPort']
+
+            testConnection = InfluxDBClient(host=inputHost, port=inputPort)
+            try:
+                testConnection.ping()
+                flash('The connection to \'' + inputHost + ':' + inputPort + '\' was successful', 'success')
+
+            except requests.exceptions.ConnectionError:
+                flash('The connection to \'' + inputHost + ':' + inputPort + '\' was not successful', 'danger')
+
             return render_template('settings.html', host=inputHost, port=inputPort)
 
     return render_template('settings.html', host=readHost, port=readPort)
