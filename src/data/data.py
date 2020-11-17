@@ -41,6 +41,7 @@ def data():
                 # Entered name is verified, create database
                 influx.create_database(dbName)
 
+                influx.close()
                 flash('Database \'' + dbName + '\' was created successfully.', 'success')
                 return redirect(url_for('data_bp.data'))
 
@@ -62,6 +63,7 @@ def data():
             # Delete the database on InfluxDB
             influx.drop_database(databaseName)
 
+            influx.close()
             flash('Database \'' + databaseName + '\' was deleted successfully.', 'success')
             return redirect(url_for('data_bp.data'))
         elif action[0] == 'generate':
@@ -176,4 +178,5 @@ def data():
                 flash('Failed to submit uploaded time series data to database \'' + database + '\'.',
                       'danger')
 
+    influx.close()
     return render_template('data.html', datetimeF=datetimeF, tuples_dbs=tuples_dbs, list_dbs=list_dbs)

@@ -175,6 +175,7 @@ def sonify():
                     values.append(point[1])
                     amountPoints += 1
 
+                influx.close()
                 return render_template('sonify.html', datetimeS=datetimeS, datetimeE=datetimeE, list_dbs=list_dbs,
                                        legend=legend, labels=labels, values=values, music=True, musicPath=musicPath,
                                        sessionID=sessionID, amountPoints=amountPoints, query=query)
@@ -218,6 +219,7 @@ def sonify():
 
                 legend = 'Queried Data'
 
+                influx.close()
                 return render_template('sonify.html', datetimeS=datetimeS, datetimeE=datetimeE, list_dbs=list_dbs,
                                        legend=legend, labels=labels, values=values, music=True, musicPath=musicPath,
                                        sessionID=sessionID, amountPoints=amountPoints, query=query)
@@ -225,4 +227,5 @@ def sonify():
             else:
                 flash('A session with an ID of \'' + sessionID + '\' was not found.', 'danger')
 
+    influx.close()
     return render_template('sonify.html', datetimeS=datetimeS, datetimeE=datetimeE, list_dbs=list_dbs, music=False)
