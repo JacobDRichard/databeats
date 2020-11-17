@@ -1,10 +1,31 @@
 {% extends "base.html" %}
 {% set page_title = 'settings' %}
 {% block content %}
+    <link href="{{ url_for('settings_bp.static', filename='css/settings.css') }}" rel="stylesheet">
     <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-md-4">
         <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h1 class="h2">Settings</h1>
+            <h1 class="h2">Connect to a different InfluxDB instance</h1>
         </div>
-
+        <p class="lead">Databeats has its own InfluxDB instance hosted on <code>localhost:8086</code>.</p>
+        <form action="#" method="post">
+            <div class="row mb-3">
+                <div class="col-fluid">
+                    <input type="text" class="form-control" name="dbHost" placeholder="Host" value="{{ host }}"
+                           required>
+                </div>
+                <div class="col-fluid">
+                    <input type="text" class="form-control" name="dbPort" placeholder="Port" value="{{ port }}"
+                           required>
+                </div>
+                <div class="col-fluid">
+                    <button type="submit" class="btn btn-success" name="action" value="testConnection">Test Connection</button>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-fluid">
+                    <button type="submit" class="btn btn-success" name="action" value="apply">Apply Changes</button>
+                </div>
+            </div>
+        </form>
     </main>
 {% endblock %}
