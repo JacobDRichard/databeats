@@ -35,6 +35,16 @@ def influxdb():
     return InfluxDBClient(host=host, port=port)
 
 
+def test_connection(t_host, t_port):
+    connection = InfluxDBClient(host=t_host, port=t_port)
+    try:
+        connection.ping()
+        return True
+
+    except requests.exceptions.ConnectionError:
+        return False
+
+
 @settings_bp.route('/settings', methods=['GET', 'POST'])
 def settings():
     global host, port
@@ -55,30 +65,37 @@ def settings():
             inputHost = request.form['dbHost']
             inputPort = request.form['dbPort']
 
-            # Set the global host and port to the inputted ones
-            host = inputHost
-            port = inputPort
+            # Test the connection first
+            status = test_connection(inputHost, inputPort)
 
-            # Write the new settings to the settings file
-            config['InfluxDB'] = {'Host': inputHost,
-                                  'Port': inputPort}
+            if status:
+                # Set the global host and port to the inputted ones
+                host = inputHost
+                port = inputPort
 
-            with open(cwd + '/settings.ini', 'w') as file:
-                config.write(file)
+                # Write the new settings to the settings file
+                config['InfluxDB'] = {'Host': inputHost,
+                                      'Port': inputPort}
 
-            flash('The settings were applied successfully', 'success')
+                with open(cwd + '/settings.ini', 'w') as file:
+                    config.write(file)
+
+                flash('The settings were applied successfully', 'success')
+            else:
+                flash(
+                    'The connection to \'' + inputHost + ':' + inputPort + '\' was not successful, settings not applied',
+                    'danger')
+
             return render_template('settings.html', host=inputHost, port=inputPort)
 
         elif action == 'testConnection':
             inputHost = request.form['dbHost']
             inputPort = request.form['dbPort']
 
-            testConnection = InfluxDBClient(host=inputHost, port=inputPort)
-            try:
-                testConnection.ping()
+            status = test_connection(inputHost, inputPort)
+            if status:
                 flash('The connection to \'' + inputHost + ':' + inputPort + '\' was successful', 'success')
-
-            except requests.exceptions.ConnectionError:
+            else:
                 flash('The connection to \'' + inputHost + ':' + inputPort + '\' was not successful', 'danger')
 
             return render_template('settings.html', host=inputHost, port=inputPort)
