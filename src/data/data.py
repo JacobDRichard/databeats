@@ -9,7 +9,8 @@ from werkzeug.utils import secure_filename
 data_bp = Blueprint(
     'data_bp', __name__,
     template_folder='templates',
-    static_folder='static'
+    static_folder='static',
+    static_url_path='/data/static'
 )
 
 
