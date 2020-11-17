@@ -9,11 +9,13 @@ def create_app():
         from data import data
         from database import database
         from sonify import sonify
+        from settings import settings
 
         appl.register_blueprint(home.home_bp, url_prefix='/')
         appl.register_blueprint(data.data_bp, url_prefix='/')
         appl.register_blueprint(database.database_bp, url_prefix='/')
         appl.register_blueprint(sonify.sonify_bp, url_prefix='/')
+        appl.register_blueprint(settings.settings_bp, url_prefix='/')
 
         return appl
 
