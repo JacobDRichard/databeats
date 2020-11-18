@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% set page_title = 'results' %}
+{% block content %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"
+            integrity="sha512-d9xgZrVZpmmQlfonhQUvTR7lMPtO7NkZMkA0ABN3PHCbKA5nqylQ/yWlFAyY6hYgdF1Qh6nYiuADWwKB4C2WSw=="
+            crossorigin="anonymous"></script>
+    <div role="main" class="col-md-9 ml-sm-auto col-lg-10 px-md-4">
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h1 class="h2">Lookup</h1>
+        </div>
+        <p class="lead">Find a previous query using your session ID.</p>
+        <form action="#" method="post">
+            <div class="row mb-3">
+                <div class="col-md-4 mb-3">
+                    <input type="text" class="form-control" name="sessionID" placeholder="Session ID" value=""
+                           required>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <button type="submit" class="btn btn-success" name="action" value="lookup">Lookup</button>
+                </div>
+            </div>
+        </form>
+        {% if music %}
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Results</h1>
+            </div>
+            <h1 class="mt-5">Results</h1>
+            <p class="lead">This session ID will allow you to pull up your results in the future.</p>
+            <p class="lead">Session ID: <code>{{ sessionID }}</code></p>
+            <a href="http://localhost:8888/sources/10000/chronograf/data-explorer?query={{ query }}">View on
+                Chronograf</a>
+            <canvas id="resultsChart" height="700"></canvas>
+            <script>createChart({{ labels|tojson }}, {{ values|tojson }}, '{{ legend|safe }}');</script>
+            <audio id="music" src="{{ musicPath }}" controls='controls'></audio>
+            <script>startListeners({{ amountPoints|safe }})</script>
+        {% endif %}
+    </div>
+{% endblock %}
