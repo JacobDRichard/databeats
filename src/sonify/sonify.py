@@ -8,6 +8,7 @@ import uuid
 from datetime import datetime, timedelta
 import csv
 from music21 import *
+from dateutil.relativedelta import relativedelta
 
 sonify_bp = Blueprint(
     'sonify_bp', __name__,
@@ -45,8 +46,11 @@ def sonify():
             measurement = request.form['measurement']
             field = request.form['field']
             instrument = request.form['instrument']
-            fieldFunction = request.form['fieldFunction']
-            groupBy = request.form['groupBy']
+            fieldFunction = request.form.get('fieldFunction', '')
+            groupBy = request.form.get('groupBy', '')
+            queryType = request.form.get('type', 'off')
+            numPast = request.form['numPast']
+            pastX = request.form['pastX']
 
             tagName = ''
             if 'tagName' in request.form:
@@ -56,39 +60,69 @@ def sonify():
             if 'tagValue' in request.form:
                 tagValue = request.form['tagValue']
 
-            datetimeStart = request.form['datetimeStart']
-            datetimeEnd = request.form['datetimeEnd']
-
-            # Check the submitted datetime data
+            # Create the starting and ending datetime based on query type
             start = ''
-            try:
-                start = datetime.strptime(datetimeStart, '%Y-%m-%dT%H:%M:%S')
-
-            except ValueError:
-                # Failed to parse, compatibility check across browsers, some do not include seconds
-                try:
-                    start = datetime.strptime(datetimeStart + ':00', '%Y-%m-%dT%H:%M:%S')
-
-                except ValueError:
-                    # Unable to parse the submitted data, flash error
-                    flash('Unable to parse the submitted start datetime.', 'danger')
-
-            start = datetime.strftime(start, '%Y-%m-%dT%H:%M:%S') + 'Z'
-
             end = ''
-            try:
-                end = datetime.strptime(datetimeEnd, '%Y-%m-%dT%H:%M:%S')
+            if queryType == 'on':
+                # This is an absolute query
+                datetimeStart = request.form['datetimeStart']
+                datetimeEnd = request.form['datetimeEnd']
 
-            except ValueError:
-                # Failed to parse, compatibility check across browsers, some do not include seconds
+                # Check the submitted datetime data
                 try:
-                    end = datetime.strptime(datetimeEnd + ':00', '%Y-%m-%dT%H:%M:%S')
+                    start = datetime.strptime(datetimeStart, '%Y-%m-%dT%H:%M:%S')
 
                 except ValueError:
-                    # Unable to parse the submitted data, flash error
-                    flash('Unable to parse the submitted start datetime.', 'danger')
+                    # Failed to parse, compatibility check across browsers, some do not include seconds
+                    try:
+                        start = datetime.strptime(datetimeStart + ':00', '%Y-%m-%dT%H:%M:%S')
 
-            end = datetime.strftime(end, '%Y-%m-%dT%H:%M:%S') + 'Z'
+                    except ValueError:
+                        # Unable to parse the submitted data, flash error
+                        flash('Unable to parse the submitted start datetime.', 'danger')
+
+                start = datetime.strftime(start, '%Y-%m-%dT%H:%M:%S') + 'Z'
+
+                try:
+                    end = datetime.strptime(datetimeEnd, '%Y-%m-%dT%H:%M:%S')
+
+                except ValueError:
+                    # Failed to parse, compatibility check across browsers, some do not include seconds
+                    try:
+                        end = datetime.strptime(datetimeEnd + ':00', '%Y-%m-%dT%H:%M:%S')
+
+                    except ValueError:
+                        # Unable to parse the submitted data, flash error
+                        flash('Unable to parse the submitted end datetime.', 'danger')
+
+                end = datetime.strftime(end, '%Y-%m-%dT%H:%M:%S') + 'Z'
+
+            elif queryType == 'off':
+                # This is a relative query
+                now = datetime.now()
+                end = datetime.now()
+                now = now.replace(microsecond=0)
+
+                if pastX == 'seconds':
+                    now -= timedelta(seconds=int(numPast))
+                elif pastX == 'minutes':
+                    now -= timedelta(minutes=int(numPast))
+                elif pastX == 'hours':
+                    now -= timedelta(hours=int(numPast))
+                elif pastX == 'days':
+                    now -= timedelta(days=int(numPast))
+                elif pastX == 'weeks':
+                    now -= timedelta(weeks=int(numPast))
+                elif pastX == 'months':
+                    now -= relativedelta(months=-int(numPast))
+                elif pastX == 'years':
+                    now -= relativedelta(years=-int(numPast))
+
+                start = datetime.strftime(now, '%Y-%m-%dT%H:%M:%S') + 'Z'
+                end = datetime.strftime(end, '%Y-%m-%dT%H:%M:%S') + 'Z'
+
+            print(start)
+            print(end)
 
             tagSection = ''
             if tagName and tagValue is not '':
@@ -96,7 +130,9 @@ def sonify():
 
             # Create query from submitted form data
             if fieldFunction is not '':
-                query = 'SELECT ' + fieldFunction + '(\"' + field + '\") AS data FROM \"' + database + '\".\"autogen\".\"' + measurement + '\" WHERE time > \'' + start + '\' AND time < \'' + end + '\'' + tagSection + ' GROUP BY time(' + groupBy + ')'
+                query = 'SELECT ' + fieldFunction + '(\"' + field + '\") AS data FROM \"' + database + \
+                        '\".\"autogen\".\"' + measurement + '\" WHERE time > \'' + start + '\' AND time < \'' + end + \
+                        '\'' + tagSection + ' GROUP BY time(' + groupBy + ')'
             else:
                 query = 'SELECT ' + field + ' AS data FROM \"' + database + '\".\"autogen\".\"' + measurement \
                         + '\" WHERE time > \'' + start + '\' AND time < \'' + end + '\'' + tagSection
@@ -202,6 +238,7 @@ def sonify():
 
             else:
                 flash('Query did not return any data, please try again.', 'danger')
+
         elif action == 'lookup':
             cwd = os.getcwd()
             sessionID = request.form['sessionID']
