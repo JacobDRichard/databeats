@@ -90,7 +90,9 @@ $(function () {
         measurement: $('#measurement'),
         tagName: $('#tagName'),
         tagValue: $('#tagValue'),
-        field: $('#field')
+        field: $('#field'),
+        fieldFunction: $('#fieldFunction'),
+        groupBy: $('#groupBy')
     }
 
     function updateMeasurements() {
@@ -260,4 +262,11 @@ $(function () {
         updateTagValues();
     });
 
+    select.fieldFunction.on('change', function () {
+        if(select.fieldFunction.val() !== '') {
+            select.groupBy.removeAttr('disabled');
+        } else {
+            select.groupBy.attr('disabled', 'disabled');
+        }
+    });
 });

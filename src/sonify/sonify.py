@@ -45,6 +45,8 @@ def sonify():
             measurement = request.form['measurement']
             field = request.form['field']
             instrument = request.form['instrument']
+            fieldFunction = request.form['fieldFunction']
+            groupBy = request.form['groupBy']
 
             tagName = ''
             if 'tagName' in request.form:
@@ -93,8 +95,11 @@ def sonify():
                 tagSection = ' AND \"' + tagName + '\"=\'' + tagValue + '\''
 
             # Create query from submitted form data
-            query = 'SELECT ' + field + ' AS data FROM \"' + database + '\".\"autogen\".\"' + measurement \
-                    + '\" WHERE time > \'' + start + '\' AND time < \'' + end + '\'' + tagSection
+            if fieldFunction is not '':
+                query = 'SELECT ' + fieldFunction + '(\"' + field + '\") AS data FROM \"' + database + '\".\"autogen\".\"' + measurement + '\" WHERE time > \'' + start + '\' AND time < \'' + end + '\'' + tagSection + ' GROUP BY time(' + groupBy + ')'
+            else:
+                query = 'SELECT ' + field + ' AS data FROM \"' + database + '\".\"autogen\".\"' + measurement \
+                        + '\" WHERE time > \'' + start + '\' AND time < \'' + end + '\'' + tagSection
 
             result = influx.query(query).raw
 
@@ -105,7 +110,14 @@ def sonify():
                 sessionID = str(uuid.uuid4())
 
                 # Grab minimum and maximum value for scaling
-                resultData = resultDataList[0]['values']
+                resultDataRaw = resultDataList[0]['values']
+
+                # Remove all None values
+                resultData = []
+                for point in resultDataRaw:
+                    if point[1] is not None:
+                        resultData.append(point)
+
                 resultsDict = {point[0]: point[1] for point in resultData}
 
                 minValue = resultsDict[min(resultsDict, key=resultsDict.get)]

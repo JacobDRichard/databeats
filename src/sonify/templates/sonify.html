@@ -36,6 +36,22 @@
                         <option>Select a database...</option>
                     </select>
                 </div>
+                <div class="col-md-1 mb-1">
+                    <label for="fieldFunction">Field Function</label>
+                    <select class="custom-select" id="fieldFunction" name="fieldFunction">
+                        <option selected></option>
+                        <option>mean</option>
+                        <option>medium</option>
+                        <option>count</option>
+                        <option>min</option>
+                        <option>max</option>
+                        <option>sum</option>
+                        <option>first</option>
+                        <option>last</option>
+                        <option>spread</option>
+                        <option>stddev</option>
+                    </select>
+                </div>
                 <div class="col-md-2 mb-2">
                     <label for="field">Field</label>
                     <select class="custom-select" id="field" name="field" required disabled>
@@ -62,6 +78,21 @@
                         {% for instrument in instrumentList %}
                             <option>{{ instrument }}</option>
                         {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-1 mb-1">
+                    <label for="groupBy">Group By</label>
+                    <select class="custom-select" id="groupBy" name="groupBy" disabled>
+                        <option selected></option>
+                        <option>10s</option>
+                        <option>1m</option>
+                        <option>5m</option>
+                        <option>10m</option>
+                        <option>30m</option>
+                        <option>1h</option>
+                        <option>6h</option>
+                        <option>1d</option>
+                        <option>7d</option>
                     </select>
                 </div>
             </div>
