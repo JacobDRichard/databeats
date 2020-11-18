@@ -92,7 +92,10 @@ $(function () {
         tagValue: $('#tagValue'),
         field: $('#field'),
         fieldFunction: $('#fieldFunction'),
-        groupBy: $('#groupBy')
+        groupBy: $('#groupBy'),
+        type: $('#type'),
+        absoluteGroup: $('#absolute'),
+        relativeGroup: $('#relative')
     }
 
     function updateMeasurements() {
@@ -269,4 +272,16 @@ $(function () {
             select.groupBy.attr('disabled', 'disabled');
         }
     });
+
+    select.type.on('change', function() {
+        if(select.type.prop('checked')) {
+            select.absoluteGroup.show();
+            select.relativeGroup.hide();
+        } else {
+            select.absoluteGroup.hide();
+            select.relativeGroup.show();
+        }
+    });
+
+    select.relativeGroup.hide();
 });
