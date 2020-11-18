@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, flash
+from flask import Blueprint, render_template, request, flash, redirect, url_for
 from settings import settings
 import os
 from os import listdir
@@ -246,25 +246,12 @@ def sonify():
                 # Cleanup old files
                 os.remove(cwd + '/midi_' + sessionID + '.midi')
 
-                # Make the chart
-                legend = 'Queried Data'
-
-                labels = []
-                values = []
-                amountPoints = 0
-                for point in resultData:
-                    labels.append(point[0])
-                    values.append(point[1])
-                    amountPoints += 1
-
                 influx.close()
-                return render_template('sonify.html', datetimeS=datetimeS, datetimeE=datetimeE, list_dbs=list_dbs,
-                                       legend=legend, labels=labels, values=values, music=True, musicPath=musicPath,
-                                       sessionID=sessionID, amountPoints=amountPoints, query=query)
+                # Redirect to the results page
+                return redirect(url_for('results_bp.results', uuid=sessionID))
 
             else:
                 flash('Query did not return any data, please try again.', 'danger')
 
     influx.close()
-    return render_template('sonify.html', datetimeS=datetimeS, datetimeE=datetimeE, list_dbs=list_dbs, music=False,
-                           instrumentList=instrumentList)
+    return render_template('sonify.html', datetimeS=datetimeS, datetimeE=datetimeE, list_dbs=list_dbs, instrumentList=instrumentList)
