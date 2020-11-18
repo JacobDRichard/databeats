@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 import csv
 from music21 import *
 from dateutil.relativedelta import relativedelta
+import configparser
 
 sonify_bp = Blueprint(
     'sonify_bp', __name__,
@@ -212,10 +213,35 @@ def sonify():
                     for point in resultData:
                         writer.writerow({'time': point[0], measurement + '.' + field: point[1]})
 
-                # Save query for when the user looks up the session ID
-                queryFile = open(cwd + '/static/generated/' + sessionID + '/query.txt', 'w')
-                queryFile.write(query)
-                queryFile.close()
+                # Save information about this query
+                config = configparser.ConfigParser()
+
+                if queryType == 'on':
+                    qType = 'Absolute'
+                else:
+                    qType = 'Relative'
+
+                config['Query'] = {'Type': qType,
+                                   'Query': query}
+
+                config['Source'] = {'Database': database,
+                                    'Measurement': measurement,
+                                    'Field': field,
+                                    'TagName': tagName,
+                                    'TagValue': tagValue,
+                                    'Instrument': instrument,
+                                    'FieldFunction': fieldFunction,
+                                    'GroupBy': groupBy}
+
+                if qType == 'Absolute':
+                    config['Time'] = {'Start': start,
+                                      'End': end}
+                else:
+                    config['Time'] = {'numPast': numPast,
+                                      'pastX': pastX}
+
+                with open(cwd + '/static/generated/' + sessionID + '/information.ini', 'w') as file:
+                    config.write(file)
 
                 # Cleanup old files
                 os.remove(cwd + '/midi_' + sessionID + '.midi')
