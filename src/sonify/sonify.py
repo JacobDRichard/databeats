@@ -265,51 +265,6 @@ def sonify():
             else:
                 flash('Query did not return any data, please try again.', 'danger')
 
-        elif action == 'lookup':
-            cwd = os.getcwd()
-            sessionID = request.form['sessionID']
-
-            # TODO: The sessionID should probably be sanitized
-
-            # Check our generated directory for the submitted session ID
-            if os.path.isdir(cwd + '/static/generated/' + sessionID):
-                musicPath = '/static/generated/' + sessionID + '/output.wav'
-                dataPath = cwd + '/static/generated/' + sessionID + '/data.csv'
-                queryPath = cwd + '/static/generated/' + sessionID + '/query.txt'
-
-                # Read the query to produce the hyperlink to Chronograf
-                queryFile = open(queryPath, 'r')
-                query = queryFile.read()
-
-                # Read the data file to populate the chart
-                labels = []
-                values = []
-                line = 0
-                dataColumn = ''
-                amountPoints = 0
-                with open(dataPath, mode='r') as dataCSV:
-                    reader = csv.DictReader(dataCSV)
-
-                    for row in reader:
-                        if line is 0:
-                            dataColumn = ','.join(row).split(',')[1]
-                            line += 1
-                            continue
-
-                        labels.append(row['time'])
-                        values.append(row[dataColumn])
-                        amountPoints += 1
-
-                legend = 'Queried Data'
-
-                influx.close()
-                return render_template('sonify.html', datetimeS=datetimeS, datetimeE=datetimeE, list_dbs=list_dbs,
-                                       legend=legend, labels=labels, values=values, music=True, musicPath=musicPath,
-                                       sessionID=sessionID, amountPoints=amountPoints, query=query)
-
-            else:
-                flash('A session with an ID of \'' + sessionID + '\' was not found.', 'danger')
-
     influx.close()
     return render_template('sonify.html', datetimeS=datetimeS, datetimeE=datetimeE, list_dbs=list_dbs, music=False,
                            instrumentList=instrumentList)
