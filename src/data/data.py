@@ -137,17 +137,21 @@ def data():
         elif action[0] == 'upload':
             # Retrieve and save file
             file = request.files['uploadFile']
-            file.save(secure_filename(file.filename))
+            file.save(secure_filename('uploaded.csv'))
 
             # Parse uploaded file
             uploadData = []
-            with open(file.filename, 'r') as uploadFile:
+            with open(os.getcwd() + '/uploaded.csv', 'r') as uploadFile:
                 reader = csv.reader(uploadFile)
 
                 # Extract measurement and field name
                 dataColumn = next(reader)
                 measurement = dataColumn[1].split('.')[0]
                 field = dataColumn[1].split('.')[1]
+
+                # Grab submitted tag name and value
+                tagName = request.form['uploadTagName']
+                tagValue = request.form['uploadTagValue']
 
                 # Parse data and create JSON list for DB write
                 for line in reader:
@@ -158,11 +162,21 @@ def data():
                             field: int(line[1])
                         }
                     }
+
+                    if tagName and tagValue is not '':
+                        tagJson = {
+                            'tags': {
+                                tagName: tagValue
+                            }
+                        }
+
+                        dataJSON.update(tagJson)
+
                     uploadData.append(dataJSON)
 
             # Remove uploaded file
             cwd = os.getcwd()
-            os.remove(cwd + '/' + file.filename)
+            os.remove(cwd + '/uploaded.csv')
 
             # Swap to selected database
             database = request.form['uploadDatabase']

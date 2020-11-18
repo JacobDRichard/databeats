@@ -111,10 +111,11 @@
             <button type="submit" class="btn btn-success" name="action" value="generate">Generate</button>
         </form>
         <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h1 class="h2">Import time-series data from a .csv export</h1>
+            <h1 class="h2">Import time-series data from a .csv file</h1>
         </div>
         <p class="lead">Add time-series data from a .csv formatted file into a database to <a
                 href="../sonify">sonify</a>.</p>
+        <p class="lead">The file must be formatted as <code>time, MEASUREMENT.FIELD</code>.</p>
         <form enctype="multipart/form-data" action="#" method="post">
             <div class="row">
                 <div class="col-md-2 mb-2">
@@ -127,16 +128,23 @@
                         {% endfor %}
                     </select>
                 </div>
-            </div>
-            <div class="row">
                 <div class="col-md-2 mb-2">
                     <label for="uploadFile">Select a file:</label>
                     <input type="file" id="uploadFile" name="uploadFile" required>
                 </div>
             </div>
             <div class="row">
-                <div class="col-fluid">
-                    <p class="lead">The file must be formatted as <code>FORMAT</code>.</p>
+                <div class="col-md-2 mb-2">
+                    <label for="tagName">Tag name (Optional)</label>
+                    <input type="text" class="form-control" id="uploadTagName" name="uploadTagName"
+                           placeholder="Tag name"
+                           value="">
+                </div>
+                <div class="col-md-2 mb-2">
+                    <label for="tagValue">Tag value (Optional)</label>
+                    <input type="text" class="form-control" id="uploadTagValue" name="uploadTagValue"
+                           placeholder="Tag value"
+                           value="">
                 </div>
             </div>
             <div class="row">
