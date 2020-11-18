@@ -2,6 +2,7 @@
 {% set page_title = 'data' %}
 {% block content %}
     <link href="{{ url_for('data_bp.static', filename='css/data.css') }}" rel="stylesheet">
+    <script src="{{ url_for('data_bp.static', filename='js/data.js') }}"></script>
     <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-md-4">
         <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
             <h1 class="h2">Manage databases</h1>
@@ -73,6 +74,10 @@
                            placeholder="Tag value"
                            value="">
                 </div>
+                <div class="col-md-2 mb-2 mt-auto">
+                    <label for="endDatetime">Ending Datetime</label>
+                    <p id="endDatetime" class="lead">End Datetime</p>
+                </div>
             </div>
             <div class="row">
                 <div class="col-md-2 mb-2">
@@ -83,6 +88,7 @@
                 <div class="col-md-2 mb-2">
                     <label for="interval">Interval</label>
                     <select class="custom-select" id="interval" name="interval" required>
+                        <option>Second</option>
                         <option>Minute</option>
                         <option>Hourly</option>
                     </select>
