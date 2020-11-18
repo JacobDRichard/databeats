@@ -1,6 +1,8 @@
 from flask import Blueprint, render_template, request, flash
 from settings import settings
 import os
+from os import listdir
+from os.path import isfile, join
 import subprocess
 import uuid
 from datetime import datetime, timedelta
@@ -31,6 +33,10 @@ def sonify():
     datetimeE += timedelta(days=1)
     datetimeE = str(datetimeE.isoformat('T'))
 
+    # Get the list of instruments that can be used
+    instrumentDir = os.getcwd() + '/instruments/'
+    instrumentList = [f.split('.')[0] for f in listdir(instrumentDir) if isfile(join(instrumentDir, f))]
+
     if request.method == 'POST':
         action = request.form.get('action')
 
@@ -38,6 +44,7 @@ def sonify():
             database = request.form['database']
             measurement = request.form['measurement']
             field = request.form['field']
+            instrument = request.form['instrument']
 
             tagName = ''
             if 'tagName' in request.form:
@@ -139,10 +146,11 @@ def sonify():
                 os.mkdir(cwd + '/static/generated/' + sessionID)
 
                 # Convert midi to wav
-                # fluidsynth -ni -F output.wav -r 44100 SF.sf2 test.midi
+                # fluidsynth -ni -F output.wav -r 44100 Piano.sf2 test.midi
                 outName = cwd + '/static/generated/' + sessionID + '/output.wav'
                 midiName = 'midi_' + sessionID + '.midi'
-                subprocess.call(['fluidsynth', '-ni', '-F', outName, '-r', '44100', 'SF.sf2', midiName])
+                instrumentFile = cwd + '/instruments/' + instrument + '.sf2'
+                subprocess.call(['fluidsynth', '-ni', '-F', outName, '-r', '44100', instrumentFile, midiName])
 
                 # Get path of the generated music
                 musicPath = '/static/generated/' + sessionID + '/output.wav'
@@ -228,4 +236,5 @@ def sonify():
                 flash('A session with an ID of \'' + sessionID + '\' was not found.', 'danger')
 
     influx.close()
-    return render_template('sonify.html', datetimeS=datetimeS, datetimeE=datetimeE, list_dbs=list_dbs, music=False)
+    return render_template('sonify.html', datetimeS=datetimeS, datetimeE=datetimeE, list_dbs=list_dbs, music=False,
+                           instrumentList=instrumentList)
