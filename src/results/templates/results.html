@@ -27,41 +27,37 @@
                 <h1 class="h2">Results</h1>
             </div>
             <table class="table table-sm text-center table-hover">
-            <thead>
-            <tr>
-                <th scope="col">ID</th>
-                <th scope="col">Type</th>
-                <th scope="col">Time Range</th>
-                <th scope="col">Generated</th>
-                <th scope="col">Database</th>
-                <th scope="col">Measurement</th>
-                <th scope="col">Field</th>
-                <th scope="col">Tag</th>
-                <th scope="col">Aggregate</th>
-                <th scope="col">Download</th>
-            </tr>
-            </thead>
-            <tbody>
-            <form action="#" method="post">
-                    <tr>
-                        <td>{{ table[0] }}</td>
-                        <td>{{ table[1] }}</td>
-                        <td>{{ table[2] }}</td>
-                        <td>{{ table[3] }}</td>
-                        <td>{{ table[4] }}</td>
-                        <td>{{ table[5] }}</td>
-                        <td>{{ table[6] }}</td>
-                        <td>{{ table[7] }}</td>
-                        <td>{{ table[8] }}</td>
-                        <td>
-                            <button type="submit" class="btn btn-sm btn-success" name="action"
-                                    value="view_{{ table[0] }}">CSV
-                            </button>
-                        </td>
-                    </tr>
-            </form>
-            </tbody>
-        </table>
+                <thead>
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Time Range</th>
+                    <th scope="col">Generated</th>
+                    <th scope="col">Database</th>
+                    <th scope="col">Measurement</th>
+                    <th scope="col">Field</th>
+                    <th scope="col">Tag</th>
+                    <th scope="col">Aggregate</th>
+                    <th scope="col">Download</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>{{ table[0] }}</td>
+                    <td>{{ table[1] }}</td>
+                    <td>{{ table[2] }}</td>
+                    <td>{{ table[3] }}</td>
+                    <td>{{ table[4] }}</td>
+                    <td>{{ table[5] }}</td>
+                    <td>{{ table[6] }}</td>
+                    <td>{{ table[7] }}</td>
+                    <td>{{ table[8] }}</td>
+                    <td>
+                        <a href="./{{ table[0] }}/download">CSV</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
             <a href="http://localhost:8888/sources/10000/chronograf/data-explorer?query={{ query }}">View on
                 Chronograf</a>
             <canvas id="resultsChart" height="700"></canvas>

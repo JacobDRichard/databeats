@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, Response
 import configparser
 import os
 import csv
@@ -95,3 +95,11 @@ def results(uuid):
     else:
         flash('Session ID \'' + uuid + '\' was not found', 'danger')
         return render_template('results.html', music=False)
+
+
+@results_bp.route('/results/<uuid>/download', methods=['GET'])
+def results_download(uuid):
+    with open(os.getcwd() + '/static/generated/' + uuid + '/data.csv') as file:
+        csv = file.read()
+
+    return Response(csv, mimetype='text/csv', headers={'Content-disposition': 'attachment; filename=data.csv'})
