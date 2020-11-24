@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, request
 import configparser
 import os
 
@@ -10,12 +10,25 @@ storage_bp = Blueprint(
 )
 
 
-@storage_bp.route('/storage', methods=['GET'])
+@storage_bp.route('/storage', methods=['GET', 'POST'])
 def storage():
     # We need to walk the app/static/generated directory to fill the table
     cwd = os.getcwd()
     generatedDir = cwd + '/static/generated/'
     dirContents = os.listdir(generatedDir)
+
+    if request.method == 'POST':
+        button = request.form.get('action')
+        action = button.split('_')
+
+        if action[0] == 'view':
+            print('view ' + action[1])
+
+        elif action[0] == 'schedule':
+            print('schedule ' + action[1])
+
+        elif action[0] == 'delete':
+            print('delete ' + action[1])
 
     table = []
     for item in dirContents:
