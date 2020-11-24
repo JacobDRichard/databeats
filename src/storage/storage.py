@@ -1,6 +1,7 @@
-from flask import Blueprint, render_template, request, redirect, url_for
+from flask import Blueprint, render_template, request, redirect, url_for, flash
 import configparser
 import os
+import shutil
 
 storage_bp = Blueprint(
     'storage_bp', __name__,
@@ -28,7 +29,8 @@ def storage():
             print('schedule ' + action[1])
 
         elif action[0] == 'delete':
-            print('delete ' + action[1])
+            shutil.rmtree(generatedDir + '/' + action[1])
+            flash('Query \'' + action[1] + '\' was deleted successfully.', 'success')
 
     table = []
     for item in dirContents:
