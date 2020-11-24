@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template, request, redirect, url_for
 import configparser
 import os
 
@@ -22,7 +22,7 @@ def storage():
         action = button.split('_')
 
         if action[0] == 'view':
-            print('view ' + action[1])
+            return redirect(url_for('results_bp.results', uuid=action[1]))
 
         elif action[0] == 'schedule':
             print('schedule ' + action[1])
