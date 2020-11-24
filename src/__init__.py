@@ -11,6 +11,7 @@ def create_app():
         from sonify import sonify
         from settings import settings
         from results import results
+        from storage import storage
 
         appl.register_blueprint(home.home_bp, url_prefix='/')
         appl.register_blueprint(data.data_bp, url_prefix='/')
@@ -18,6 +19,7 @@ def create_app():
         appl.register_blueprint(sonify.sonify_bp, url_prefix='/')
         appl.register_blueprint(settings.settings_bp, url_prefix='/')
         appl.register_blueprint(results.results_bp, url_prefix='/')
+        appl.register_blueprint(storage.storage_bp, url_prefix='/')
 
         return appl
 
