@@ -1,5 +1,67 @@
 {% extends "base.html" %}
 {% set page_title = 'storage' %}
 {% block content %}
-    this is the storage page
+    <div role="main" class="col-md-9 ml-sm-auto col-lg-10 px-md-4">
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h1 class="h2">Storage</h1>
+        </div>
+        <p class="lead">Manage the stored queries on the system.</p>
+
+        <table class="table table-sm text-center table-hover table-striped">
+            <thead>
+            <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Type</th>
+                <th scope="col">Time Range</th>
+                <th scope="col">Generated</th>
+                <th scope="col">Database</th>
+                <th scope="col">Measurement</th>
+                <th scope="col">Field</th>
+                <th scope="col">Tag</th>
+                <th scope="col">Aggregate</th>
+                <th scope="col"></th>
+                <th scope="col"></th>
+                <th scope="col"></th>
+            </tr>
+            </thead>
+            <tbody>
+            <form action="#" method="post">
+                {% for item in table %}
+                    <tr>
+                        <td>{{ item[1] }}</td>
+                        <td>{{ item[2] }}</td>
+                        <td>{{ item[3] }}</td>
+                        <td>{{ item[4] }}</td>
+                        <td>{{ item[5] }}</td>
+                        <td>{{ item[6] }}</td>
+                        <td>{{ item[7] }}</td>
+                        <td>{{ item[8] }}</td>
+                        <td>{{ item[9] }}</td>
+                        <td>
+                            <button type="submit" class="btn btn-sm btn-success" name="action"
+                                    value="view_{{ item[0] }}">View
+                            </button>
+                        </td>
+                        <td>
+                            {% if item[2] == 'Absolute' %}
+                                <button type="submit" class="btn btn-sm btn-warning" disabled name="action"
+                                        value="schedule_">Schedule
+                                </button>
+                            {% elif item[2] == 'Relative' %}
+                                <button type="submit" class="btn btn-sm btn-warning" name="action"
+                                        value="schedule_{{ item[0] }}">Schedule
+                                </button>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button type="submit" class="btn btn-sm btn-danger" name="action"
+                                    value="delete_{{ item[0] }}">Delete
+                            </button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </form>
+            </tbody>
+        </table>
+    </div>
 {% endblock %}
