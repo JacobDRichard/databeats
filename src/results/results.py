@@ -42,6 +42,32 @@ def results(uuid):
 
         query = config['Query']['Query']
 
+        # Create the table list
+        table = [uuid]
+        # Time information
+        # Keep track of the query type
+        qType = config['Query']['type']
+        table.append(qType)
+        if qType == 'Absolute':
+            table.append(config['Time']['start'] + ' to ' + config['Time']['end'])
+        else:
+            table.append('Past ' + config['Time']['numpast'] + ' ' + config['Time']['pastx'] + ' (' + config['Time'][
+                'start'] + ' to ' + config['Time']['end'] + ')')
+        table.append(config['Time']['generated'])
+
+        # Source information
+        table.append(config['Source']['database'])
+        table.append(config['Source']['measurement'])
+        table.append(config['Source']['field'])
+        if config['Source']['tagname'] is not '':
+            table.append(config['Source']['tagname'] + '=' + config['Source']['tagvalue'])
+        else:
+            table.append('N/A')
+        if config['Source']['fieldfunction'] is not '':
+            table.append(config['Source']['fieldfunction'] + ' every ' + config['Source']['groupby'])
+        else:
+            table.append('N/A')
+
         # Read the data file to populate the chart
         labels = []
         values = []
@@ -63,7 +89,8 @@ def results(uuid):
 
         legend = 'Queried Data'
 
-        return render_template('results.html', music=True, musicPath=musicPath, sessionID=uuid, labels=labels, values=values, legend=legend, amountPoints=amountPoints, query=query)
+        return render_template('results.html', music=True, musicPath=musicPath, table=table, sessionID=uuid,
+                               labels=labels, values=values, legend=legend, amountPoints=amountPoints, query=query)
 
     else:
         flash('Session ID \'' + uuid + '\' was not found', 'danger')
