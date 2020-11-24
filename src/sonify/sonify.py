@@ -122,9 +122,6 @@ def sonify():
                 start = datetime.strftime(now, '%Y-%m-%dT%H:%M:%S') + 'Z'
                 end = datetime.strftime(end, '%Y-%m-%dT%H:%M:%S') + 'Z'
 
-            print(start)
-            print(end)
-
             tagSection = ''
             if tagName and tagValue is not '':
                 tagSection = ' AND \"' + tagName + '\"=\'' + tagValue + '\''
@@ -145,6 +142,11 @@ def sonify():
             if len(resultDataList):
                 # Query returned data, generate random session ID
                 sessionID = str(uuid.uuid4())
+
+                # Grab the current time
+                generated = datetime.now()
+                generated = generated.replace(microsecond=0)
+                generated = str(generated.isoformat('T')) + 'Z'
 
                 # Grab minimum and maximum value for scaling
                 resultDataRaw = resultDataList[0]['values']
@@ -232,11 +234,11 @@ def sonify():
                                     'Instrument': instrument,
                                     'FieldFunction': fieldFunction,
                                     'GroupBy': groupBy}
+                config['Time'] = {'Start': start,
+                                  'End': end,
+                                  'Generated': generated}
 
-                if qType == 'Absolute':
-                    config['Time'] = {'Start': start,
-                                      'End': end}
-                else:
+                if qType == 'Relative':
                     config['Time'] = {'numPast': numPast,
                                       'pastX': pastX}
 
